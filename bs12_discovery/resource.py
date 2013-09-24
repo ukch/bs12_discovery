@@ -1,3 +1,6 @@
+from bs12_discovery.models import DBSession, Service, Server
+
+
 def _add(obj, name, parent):
     obj.__name__ = name
     obj.__parent__ = parent
@@ -17,14 +20,33 @@ class Resource(object):
         return _add(self.LOOKUP[name](self.request), name, self)
 
 
-class ApiServiceList(Resource):
+class ModelFinderResource(Resource):
 
-    pass
+    # FIXME this class probably needs rewriting
+
+    MODEL = None
+    MODEL_ACCESSOR = "name"
+    CHILD_RESOURCE = Server
+
+    def _getitem__(self, name):
+        try:
+            return super(ModelFinderResource, self).__getitem__(name)
+        except KeyError:
+            if self.MODEL is None:
+                raise
+            obj = DBSession.query(self.MODEL).get(
+                **{self.MODEL_ACCESSOR: name})
+            return _add(self.CHILD(self.request, obj), name, self)
 
 
-class ApiServerList(Resource):
+class ApiServiceList(ModelFinderResource):
 
-    pass
+    MODEL = Service
+
+
+class ApiServerList(ModelFinderResource):
+
+    MODEL = Server
 
 
 class ApiRoot(Resource):
