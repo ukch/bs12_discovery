@@ -1,4 +1,4 @@
-src/bs12_discovery.egg-info/
+bs12_discovery.egg-info/
 *.log
 *.pot
 *.pyc
